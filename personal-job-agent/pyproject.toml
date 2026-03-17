@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "personal-job-agent"
+version = "0.1.0"
+description = "Personal AI Job Search Command Center"
+requires-python = ">=3.11"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+ignore = ["E501", "B008", "B904"]
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "migrations",
+    "*.egg-info",
+]
+
+[tool.ruff.isort]
+known-first-party = ["backend", "workers", "engines", "crawlers", "integrations"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+env = [
+    "TESTING=true",
+    "DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/job_agent_test",
+    "REDIS_URL=redis://localhost:6379/1",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+exclude = ["migrations/", "tests/"]
+
+[tool.coverage.run]
+source = ["backend", "workers", "engines"]
+omit = ["*/migrations/*", "*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+fail_under = 60
+show_missing = true

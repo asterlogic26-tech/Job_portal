@@ -1,0 +1,125 @@
+# Job Discovery Sources Configuration
+# Controls which sources are active and their crawl settings
+
+sources:
+  rss_feeds:
+    enabled: true
+    feeds:
+      - name: "We Work Remotely - Programming"
+        url: "https://weworkremotely.com/categories/remote-programming-jobs.rss"
+        category: "engineering"
+        enabled: true
+      - name: "We Work Remotely - Full Stack"
+        url: "https://weworkremotely.com/categories/remote-full-stack-programming-jobs.rss"
+        category: "engineering"
+        enabled: true
+      - name: "We Work Remotely - DevOps"
+        url: "https://weworkremotely.com/categories/remote-devops-sysadmin-jobs.rss"
+        category: "devops"
+        enabled: true
+      - name: "RemoteOK"
+        url: "https://remoteok.com/remote-jobs.json"
+        category: "engineering"
+        enabled: true
+        format: "json"
+      - name: "HN Who is Hiring"
+        url: "https://hnrss.org/whoishiring"
+        category: "engineering"
+        enabled: true
+      - name: "Stack Overflow Jobs"
+        url: "https://stackoverflow.com/jobs/feed"
+        category: "engineering"
+        enabled: false  # check availability
+      - name: "GitHub Jobs (archived mirror)"
+        url: ""
+        category: "engineering"
+        enabled: false
+
+  ats_apis:
+    enabled: true
+    providers:
+      greenhouse:
+        enabled: true
+        base_url: "https://boards-api.greenhouse.io/v1/boards"
+        rate_limit_rps: 2
+        boards:
+          - "stripe"
+          - "anthropic"
+          - "openai"
+          - "figma"
+          - "notion"
+          - "linear"
+          - "vercel"
+          - "planetscale"
+          - "supabase"
+          - "hashicorp"
+          - "datadog"
+          - "mongodb"
+          - "confluent"
+          - "databricks"
+          - "snowflake"
+      lever:
+        enabled: true
+        base_url: "https://api.lever.co/v0/postings"
+        rate_limit_rps: 2
+        companies:
+          - "airtable"
+          - "brex"
+          - "carta"
+          - "cloudflare"
+          - "discord"
+          - "dropbox"
+          - "figma"
+          - "gusto"
+          - "intercom"
+          - "notion"
+          - "plaid"
+          - "retool"
+          - "rippling"
+          - "robinhood"
+          - "scale-ai"
+
+  direct_apis:
+    enabled: true
+    providers:
+      remoteok:
+        enabled: true
+        url: "https://remoteok.com/api"
+        tag_filter: ["dev", "python", "react", "fullstack", "backend"]
+        rate_limit_rps: 1
+      ycombinator:
+        enabled: true
+        url: "https://hacker-news.firebaseio.com/v0"
+        who_is_hiring_search: true
+        rate_limit_rps: 5
+
+  js_rendered:
+    enabled: false  # requires Playwright, opt-in
+    providers:
+      linkedin:
+        enabled: false
+        note: "LinkedIn aggressively blocks scrapers — manual task created instead"
+      indeed:
+        enabled: false
+        note: "Indeed requires login — manual task created instead"
+
+crawl_settings:
+  default_delay_seconds: 2.0
+  max_concurrent_requests: 4
+  respect_robots_txt: true
+  user_agent: "JobAgentBot/1.0 (personal research tool; not for commercial use)"
+  retry_attempts: 2
+  retry_delay_seconds: 5
+  timeout_seconds: 30
+
+block_detection:
+  status_codes: [401, 403, 429, 503]
+  captcha_indicators:
+    - "captcha"
+    - "cf-challenge"
+    - "cloudflare"
+    - "bot detection"
+    - "access denied"
+    - "rate limit"
+    - "too many requests"
+  action_on_block: "create_manual_task"  # never bypass

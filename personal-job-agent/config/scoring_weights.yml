@@ -1,0 +1,81 @@
+# Job Match Scoring Weights
+# All weights must sum to 1.0
+
+match_scoring:
+  weights:
+    skill_overlap: 0.30        # skill intersection between job requirements and user skills
+    seniority_fit: 0.20        # alignment of experience level requirements
+    culture_fit: 0.15          # company culture/values alignment (inferred from signals)
+    company_growth: 0.15       # company radar hiring velocity and funding signals
+    salary_alignment: 0.10     # salary range overlap
+    recency: 0.10              # how recently the job was posted
+
+  thresholds:
+    high_match: 0.75           # score >= this triggers high-match notification
+    good_match: 0.60           # score >= this shows in recommended section
+    min_display: 0.30          # score < this is hidden from feed
+
+  skill_overlap:
+    exact_match_bonus: 0.10    # bonus for exact canonical skill name match
+    adjacent_skill_credit: 0.5 # partial credit for related/adjacent skills
+    min_required_skills: 2     # minimum skills to compute meaningful overlap
+
+  seniority_fit:
+    year_ranges:
+      intern: [0, 1]
+      junior: [0, 2]
+      mid: [2, 5]
+      senior: [5, 10]
+      staff: [8, 15]
+      principal: [12, 25]
+      director: [10, 30]
+    over_qualified_penalty: 0.15  # deduct if user has 3+ years more than max
+    under_qualified_penalty: 0.25 # deduct if user has 2+ years less than min
+
+  recency:
+    half_life_days: 14         # score halves every 14 days
+    decay_lambda: 0.693        # ln(2) — exponential decay constant
+    max_age_days: 60           # jobs older than this score 0 for recency
+
+  salary:
+    overlap_method: "jaccard"  # jaccard overlap between ranges
+    no_salary_score: 0.5       # neutral score when salary not disclosed
+
+  culture_fit:
+    signals:
+      remote_preferred:
+        weight: 0.4
+      flexible_hours:
+        weight: 0.2
+      async_first:
+        weight: 0.2
+      learning_budget:
+        weight: 0.1
+      equity_offered:
+        weight: 0.1
+
+# Interview probability predictor weights
+interview_predictor:
+  base_probability: 0.35
+  adjustments:
+    skill_match_high:          # skill overlap >= 0.8
+      delta: +0.25
+    skill_match_medium:        # skill overlap 0.5-0.8
+      delta: +0.15
+    skill_match_low:           # skill overlap < 0.5
+      delta: -0.15
+    experience_over_qualified:
+      delta: -0.10
+    experience_under_qualified:
+      delta: -0.15
+    network_connection_found:
+      delta: +0.15
+    recent_funding_signal:
+      delta: +0.10
+    recency_fresh:             # posted < 3 days
+      delta: +0.10
+    recency_stale:             # posted > 14 days
+      delta: -0.10
+  bounds:
+    min: 0.05
+    max: 0.95

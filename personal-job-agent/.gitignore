@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.env
+!.env.example
+*.egg-info/
+dist/
+build/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ML Models
+engines/predictor/models/*.pkl
+engines/predictor/models/*.joblib
+engines/predictor/models/*.pt
+!engines/predictor/models/.gitkeep
+
+# Logs & data
+*.log
+logs/
+backups/
+!backups/.gitkeep
+minio_data/
+
+# Test & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Scrapy
+.scrapy/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Celery
+celerybeat-schedule
+celerybeat.pid

@@ -1,0 +1,109 @@
+# Notification Templates
+# Used by notification_tasks.py and email_client.py
+
+templates:
+  high_match_alert:
+    subject: "High Match Job Alert: {job_title} at {company_name}"
+    channel: ["in_app", "email"]
+    priority: "high"
+    body: |
+      A new job matching {match_score}% of your profile was found.
+
+      **{job_title}** at **{company_name}**
+      {location} | {remote_policy}
+      {salary_display}
+
+      Top matching skills: {matching_skills}
+
+      Posted: {posted_at_relative}
+
+      [View Job →]({job_url})
+
+  daily_digest:
+    subject: "Your Daily Job Digest — {date}"
+    channel: ["email"]
+    priority: "normal"
+    schedule: "08:00"  # local time
+    body: |
+      Good morning! Here's your daily job digest for {date}.
+
+      ## New Jobs ({new_jobs_count} new)
+      {job_list}
+
+      ## Applications Update
+      - Active applications: {active_applications}
+      - Awaiting response: {awaiting_response}
+      - Interviews scheduled: {interviews_scheduled}
+
+      ## Top Companies Hiring
+      {top_companies}
+
+      ---
+      [Open Dashboard →]({dashboard_url})
+
+  follow_up_reminder:
+    subject: "Follow-up Reminder: {company_name} — {days_since} days"
+    channel: ["in_app", "email"]
+    priority: "normal"
+    body: |
+      It's been **{days_since} days** since you applied to **{job_title}** at **{company_name}**.
+
+      Consider sending a follow-up email if you haven't heard back.
+
+      Application status: {current_status}
+      Applied on: {applied_at}
+
+      [View Application →]({application_url})
+      [Draft Follow-up Email →]({draft_url})
+
+  profile_health_alert:
+    subject: "Profile Health Check: Action Needed"
+    channel: ["in_app"]
+    priority: "low"
+    body: |
+      Your profile health score is **{health_score}/100** (Grade {grade}).
+
+      Missing sections:
+      {missing_sections}
+
+      Completing your profile improves match accuracy.
+
+      [Update Profile →]({profile_url})
+
+  manual_task_created:
+    subject: "Manual Action Required: {task_type}"
+    channel: ["in_app"]
+    priority: "high"
+    body: |
+      A site blocked automated access and requires your manual attention.
+
+      **Task**: {task_description}
+      **Site**: {site_url}
+      **Reason**: {block_reason}
+
+      [Complete Manual Task →]({task_url})
+
+  application_status_changed:
+    subject: "Application Update: {company_name} — {new_status}"
+    channel: ["in_app"]
+    priority: "normal"
+    body: |
+      Your application status has been updated.
+
+      **{job_title}** at **{company_name}**
+      Status: {old_status} → **{new_status}**
+
+      [View Application →]({application_url})
+
+  content_ready_for_review:
+    subject: "Content Ready: {content_type} Draft"
+    channel: ["in_app"]
+    priority: "low"
+    body: |
+      A new {content_type} draft is ready for your review.
+
+      **{content_title}**
+
+      All generated content is saved as a draft until you approve it.
+
+      [Review Draft →]({content_url})

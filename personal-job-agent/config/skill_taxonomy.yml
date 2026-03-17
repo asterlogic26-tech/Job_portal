@@ -1,0 +1,244 @@
+# Skill Taxonomy and Normalization Map
+# Maps raw skill strings to canonical names and groups them into categories
+
+canonical_skills:
+  # Programming Languages
+  languages:
+    python:
+      aliases: ["py", "python3", "python2", "python 3", "python 2"]
+      weight: 1.0
+    javascript:
+      aliases: ["js", "javascript", "java script", "ecmascript", "es6", "es2015", "es2020"]
+      weight: 1.0
+    typescript:
+      aliases: ["ts", "typescript", "typed javascript"]
+      weight: 1.0
+    go:
+      aliases: ["golang", "go lang", "go language"]
+      weight: 1.0
+    rust:
+      aliases: ["rust-lang", "rustlang"]
+      weight: 1.0
+    java:
+      aliases: ["java 8", "java 11", "java 17", "java 21", "openjdk"]
+      weight: 1.0
+    kotlin:
+      aliases: ["kotlin/jvm", "kotlin jvm"]
+      weight: 1.0
+    scala:
+      aliases: ["scala 2", "scala 3"]
+      weight: 1.0
+    csharp:
+      aliases: ["c#", "c sharp", "dotnet", ".net", "net core", ".net core"]
+      weight: 1.0
+    cpp:
+      aliases: ["c++", "cpp", "c plus plus", "cplusplus"]
+      weight: 1.0
+    ruby:
+      aliases: ["rb", "ruby on rails", "ror"]
+      weight: 1.0
+    php:
+      aliases: ["php7", "php8", "php 7", "php 8", "laravel", "symfony"]
+      weight: 0.8
+    swift:
+      aliases: ["swift ui", "swiftui"]
+      weight: 1.0
+    elixir:
+      aliases: ["elixir lang", "phoenix", "phoenix framework"]
+      weight: 1.0
+    sql:
+      aliases: ["structured query language", "ansi sql", "plpgsql", "pl/pgsql", "t-sql", "pl/sql"]
+      weight: 1.0
+
+  # Frameworks & Libraries
+  frameworks:
+    react:
+      aliases: ["reactjs", "react.js", "react js", "react 18", "react 17"]
+      weight: 1.0
+    nextjs:
+      aliases: ["next.js", "next js", "nextjs 13", "nextjs 14", "next 14"]
+      weight: 1.0
+    vue:
+      aliases: ["vuejs", "vue.js", "vue js", "vue 3", "nuxt", "nuxt.js"]
+      weight: 0.9
+    angular:
+      aliases: ["angularjs", "angular 2+", "angular 15", "angular 16", "angular 17"]
+      weight: 0.9
+    svelte:
+      aliases: ["sveltejs", "svelte.js", "sveltekit", "svelte kit"]
+      weight: 0.8
+    fastapi:
+      aliases: ["fast api", "fastapi framework"]
+      weight: 1.0
+    django:
+      aliases: ["django rest framework", "drf", "django rest", "django framework"]
+      weight: 1.0
+    flask:
+      aliases: ["flask framework", "flask python"]
+      weight: 0.9
+    fastify:
+      aliases: ["fastify.js", "fastifyjs"]
+      weight: 0.9
+    express:
+      aliases: ["expressjs", "express.js", "express framework"]
+      weight: 0.9
+    spring:
+      aliases: ["spring boot", "springboot", "spring framework", "spring mvc"]
+      weight: 0.9
+    rails:
+      aliases: ["ruby on rails", "rails framework", "ror"]
+      weight: 0.9
+    nestjs:
+      aliases: ["nest.js", "nest js", "nestjs framework"]
+      weight: 0.9
+
+  # Databases
+  databases:
+    postgresql:
+      aliases: ["postgres", "pg", "psql", "postgresql 14", "postgresql 15", "postgresql 16"]
+      weight: 1.0
+    mysql:
+      aliases: ["mysql 8", "mariadb", "maria db", "percona"]
+      weight: 0.9
+    mongodb:
+      aliases: ["mongo", "mongo db", "mongodb atlas"]
+      weight: 0.9
+    redis:
+      aliases: ["redis cache", "redis sentinel", "redis cluster"]
+      weight: 0.9
+    elasticsearch:
+      aliases: ["elastic search", "elk", "opensearch", "open search"]
+      weight: 0.9
+    clickhouse:
+      aliases: ["click house"]
+      weight: 0.8
+    cassandra:
+      aliases: ["apache cassandra", "datastax"]
+      weight: 0.8
+    dynamodb:
+      aliases: ["dynamo db", "aws dynamodb"]
+      weight: 0.8
+    snowflake:
+      aliases: ["snowflake db", "snowflake warehouse"]
+      weight: 0.8
+    bigquery:
+      aliases: ["big query", "google bigquery", "bq"]
+      weight: 0.8
+    sqlite:
+      aliases: ["sqlite3", "sqlite 3"]
+      weight: 0.6
+
+  # Cloud & Infrastructure
+  cloud:
+    aws:
+      aliases: ["amazon web services", "amazon aws", "aws cloud"]
+      weight: 1.0
+    gcp:
+      aliases: ["google cloud", "google cloud platform", "google gcp"]
+      weight: 1.0
+    azure:
+      aliases: ["microsoft azure", "azure cloud", "azure devops"]
+      weight: 1.0
+    kubernetes:
+      aliases: ["k8s", "k8", "kube", "kubectl", "helm"]
+      weight: 1.0
+    docker:
+      aliases: ["docker container", "docker compose", "docker-compose", "dockerfile"]
+      weight: 1.0
+    terraform:
+      aliases: ["terraform iac", "hashicorp terraform", "tf"]
+      weight: 1.0
+    ansible:
+      aliases: ["ansible playbook", "ansible automation"]
+      weight: 0.9
+    pulumi:
+      aliases: ["pulumi iac"]
+      weight: 0.8
+    jenkins:
+      aliases: ["jenkins ci", "jenkins pipeline"]
+      weight: 0.8
+    github_actions:
+      aliases: ["github actions", "gh actions", "gha"]
+      weight: 1.0
+    gitlab_ci:
+      aliases: ["gitlab ci/cd", "gitlab pipeline"]
+      weight: 0.9
+    circleci:
+      aliases: ["circle ci"]
+      weight: 0.8
+
+  # Data & ML
+  ml_data:
+    pytorch:
+      aliases: ["torch", "pytorch lightning"]
+      weight: 1.0
+    tensorflow:
+      aliases: ["tf", "tensorflow 2", "keras", "tf.keras"]
+      weight: 1.0
+    scikit_learn:
+      aliases: ["sklearn", "scikit learn", "scikitlearn"]
+      weight: 1.0
+    pandas:
+      aliases: ["pandas dataframe"]
+      weight: 0.9
+    numpy:
+      aliases: ["np", "numpy array"]
+      weight: 0.9
+    spark:
+      aliases: ["apache spark", "pyspark", "spark streaming"]
+      weight: 1.0
+    kafka:
+      aliases: ["apache kafka", "kafka streaming", "kafka connect"]
+      weight: 1.0
+    airflow:
+      aliases: ["apache airflow", "airflow dag"]
+      weight: 0.9
+    dbt:
+      aliases: ["dbt core", "dbt cloud", "data build tool"]
+      weight: 0.9
+    langchain:
+      aliases: ["lang chain"]
+      weight: 0.9
+    openai:
+      aliases: ["openai api", "gpt", "gpt-4", "chatgpt api"]
+      weight: 0.9
+
+  # Practices & Methodologies
+  practices:
+    tdd:
+      aliases: ["test driven development", "test-driven development"]
+      weight: 0.8
+    agile:
+      aliases: ["scrum", "kanban", "sprint", "agile methodology"]
+      weight: 0.7
+    ci_cd:
+      aliases: ["ci/cd", "continuous integration", "continuous delivery", "continuous deployment"]
+      weight: 1.0
+    microservices:
+      aliases: ["micro services", "microservice architecture", "service mesh"]
+      weight: 0.9
+    graphql:
+      aliases: ["graph ql", "gql", "apollo graphql"]
+      weight: 0.9
+    rest:
+      aliases: ["rest api", "restful", "restful api", "rest apis"]
+      weight: 0.8
+    grpc:
+      aliases: ["grpc", "protocol buffers", "protobuf"]
+      weight: 0.9
+
+# Seniority inference from skill combinations
+seniority_signals:
+  senior_indicators:
+    - "system design"
+    - "distributed systems"
+    - "architecture"
+    - "technical leadership"
+    - "mentoring"
+    - "team lead"
+  junior_indicators:
+    - "learning"
+    - "entry level"
+    - "junior developer"
+    - "bootcamp"
+    - "internship"
