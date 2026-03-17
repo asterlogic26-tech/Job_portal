@@ -1,0 +1,93 @@
+# ============================================================
+# Production overrides for docker-compose.yml
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# What this file changes vs dev:
+#   - Frontend uses production multi-stage build (Dockerfile.prod)
+#   - No --reload on uvicorn (2 workers instead)
+#   - Nginx exposes 443 + mounts Let's Encrypt certs
+#   - Certbot container for SSL auto-renewal
+#   - Postgres / Redis NOT exposed on host ports
+#   - restart: always on every service
+# ============================================================
+
+version: "3.9"
+
+services:
+
+  # ── Production frontend: build React → nginx static ─────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports: []          # port 80 NOT exposed — nginx proxies internally
+
+  # ── Backend: no --reload, 2 workers ─────────────────────────────────────────
+  backend:
+    restart: always
+    command: >
+      sh -c "alembic -c backend/alembic.ini upgrade head &&
+             uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 2"
+    ports: []
+
+  # ── Workers ──────────────────────────────────────────────────────────────────
+  worker:
+    restart: always
+
+  celery-beat:
+    restart: always
+
+  flower:
+    restart: always
+
+  # ── Infrastructure ────────────────────────────────────────────────────────────
+  postgres:
+    restart: always
+    ports: []          # NOT exposed outside the container network
+
+  redis:
+    restart: always
+    ports: []
+
+  qdrant:
+    restart: always
+
+  minio:
+    restart: always
+
+  # ── Nginx: expose 80 + 443, mount SSL certs ──────────────────────────────────
+  nginx:
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/conf.d/app.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_webroot:/var/www/certbot:ro
+      - letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - frontend
+      - certbot
+
+  # ── Certbot: obtain + auto-renew Let's Encrypt cert ─────────────────────────
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - certbot_webroot:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+    # Check for renewal every 12 hours
+    entrypoint: >
+      sh -c "trap exit TERM;
+             while :; do
+               certbot renew --webroot -w /var/www/certbot --quiet;
+               sleep 12h & wait $${!};
+             done"
+
+volumes:
+  certbot_webroot:
+  letsencrypt:
