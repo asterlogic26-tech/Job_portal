@@ -174,9 +174,10 @@ async def _compute_match_async(job_id: str):
         )
         session.commit()
 
-    # Check if high match → create notification
+    # High match → create notification + queue auto-apply
     if match_result["match_score"] >= 75:
         _create_high_match_notification(job_id, job_row[1], job_row[10], match_result["match_score"])
+        _trigger_auto_apply(job_id, match_result["match_score"])
 
     logger.debug(f"Match computed for job {job_id}: {match_result['match_score']}")
 
@@ -205,3 +206,17 @@ def _create_high_match_notification(job_id: str, title: str, company: str, score
             session.commit()
     except Exception as e:
         logger.error(f"Notification creation failed: {e}")
+
+
+def _trigger_auto_apply(job_id: str, match_score: float):
+    """Queue an auto-apply task for a high-match job."""
+    try:
+        from workers.celery_app import celery_app
+        celery_app.send_task(
+            "workers.tasks.apply_tasks.auto_apply_job",
+            args=[job_id, match_score],
+            queue="default",
+        )
+        logger.info(f"Auto-apply queued for job {job_id} (score={match_score:.0f}%)")
+    except Exception as e:
+        logger.error(f"Failed to queue auto-apply for {job_id}: {e}")

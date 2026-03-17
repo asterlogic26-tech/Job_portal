@@ -31,6 +31,7 @@ from agents.matching_agent import MatchingAgent
 from agents.success_predictor_agent import SuccessPredictorAgent
 from agents.resume_agent import ResumeAgent
 from agents.application_agent import ApplicationAgent
+from agents.auto_apply_agent import AutoApplyAgent
 from agents.outreach_agent import OutreachAgent
 from agents.referral_agent import ReferralAgent
 from agents.company_radar_agent import CompanyRadarAgent
@@ -45,6 +46,7 @@ _PIPELINE: List[str] = [
     "success_predictor",
     "resume",
     "application",
+    "auto_apply",
     "outreach",
     "referral",
 ]
@@ -56,6 +58,7 @@ _ALL_AGENTS = {
     "success_predictor": SuccessPredictorAgent,
     "resume": ResumeAgent,
     "application": ApplicationAgent,
+    "auto_apply": AutoApplyAgent,
     "outreach": OutreachAgent,
     "referral": ReferralAgent,
     "company_radar": CompanyRadarAgent,

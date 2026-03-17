@@ -66,6 +66,7 @@ personal-job-agent/
 │   ├── company_radar/ Signal collector (funding, news, hiring)
 │   └── predictor/   Interview probability predictor
 │
+├── agents/           Multi-agent AI pipeline (9 agents + orchestrator)
 ├── crawlers/         Scrapy spiders (LinkedIn, Indeed, …)
 ├── integrations/     External API clients (Crunchbase, Hunter.io, …)
 ├── frontend/         React + TypeScript + Tailwind (Vite)
@@ -118,7 +119,7 @@ personal-job-agent/
 
 ## Database schema
 
-11 tables — all with `created_at` / `updated_at` timestamps:
+12 tables — all with `created_at` / `updated_at` timestamps:
 
 - `user_profile` — single row (pre-seeded)
 - `jobs` — discovered job postings
@@ -131,6 +132,7 @@ personal-job-agent/
 - `manual_tasks` — tasks requiring human action (CAPTCHA, etc.)
 - `recruiter_contacts` — recruiter CRM
 - `network_connections` — personal network for referrals
+- `agent_logs` — per-agent execution log (input, output, duration, success)
 
 Migrations live in `backend/db/migrations/versions/`. Run manually with:
 
@@ -196,6 +198,67 @@ Copy `.env.example` to `.env`. Key variables:
 | `NOTIFICATION_EMAIL` | *(optional)* | Where to send email digests |
 
 See `.env.example` for the full list.
+
+---
+
+## Multi-Agent AI System
+
+The `agents/` package implements a coordinated pipeline of 9 specialised AI agents that run automatically whenever a new job is processed.
+
+### Pipeline sequence
+
+```
+Job ──► Job Analysis ──► Matching ──► Success Predictor
+                                           │
+                    ┌──────────────────────┘
+                    ▼
+               Resume ──► Application ──► Outreach ──► Referral
+```
+
+| Agent | Input | Output |
+|-------|-------|--------|
+| **Job Analysis** | Job description text | `required_skills`, `experience_level`, `job_summary`, `key_requirements` |
+| **Matching** | Job + profile | `match_score`, `matched_skills`, `missing_skills` |
+| **Success Predictor** | Match result + network + radar | `success_score`, `probability_label` |
+| **Resume** | Profile + matched skills | `custom_resume`, `highlighted_skills` |
+| **Application** | Profile + match | `application_steps`, `form_data`, `status` |
+| **Outreach** | Profile + job | `message_text` (recruiter email) |
+| **Referral** | Network connections + job | `referral_message` |
+| **Company Radar** | Company signals | `hiring_probability`, `insights` |
+| **Content** | Profile + job context | `linkedin_post` |
+
+### Agent API endpoints
+
+```bash
+# Run the full pipeline for a job (synchronous)
+POST /api/v1/agents/pipeline/{job_id}
+
+# Queue the pipeline as a background Celery task
+POST /api/v1/agents/pipeline/{job_id}/trigger
+
+# Run a single named agent with custom input
+POST /api/v1/agents/{agent_name}/run
+
+# View execution logs
+GET  /api/v1/agents/logs
+GET  /api/v1/agents/logs/job/{job_id}
+
+# Discover available agents
+GET  /api/v1/agents/available
+```
+
+### Agent logs
+
+Every agent execution is persisted in the `agent_logs` table with full input/output JSON, duration, success flag, and a `pipeline_run_id` grouping key for end-to-end tracing.
+
+### Extending agents
+
+1. Subclass `agents.base.BaseAgent`
+2. Set `name` and implement `async run(input_data) → dict`
+3. Register in `agents/orchestrator.py` under `_ALL_AGENTS`
+4. Add to `_PIPELINE` if it should run automatically
+
+All agents degrade gracefully when the LLM is unavailable — they use rule-based fallbacks rather than failing the pipeline.
 
 ---
 

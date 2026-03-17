@@ -30,6 +30,7 @@ celery_app = Celery(
         "workers.tasks.cleanup_tasks",
         "workers.tasks.prediction_tasks",
         "workers.tasks.agent_tasks",
+        "workers.tasks.apply_tasks",
     ],
 )
 

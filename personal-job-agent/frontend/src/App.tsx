@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics'
 import ProfileHealth from './pages/ProfileHealth'
 import Settings from './pages/Settings'
 import Dashboard from './pages/Dashboard'
+import Applications from './pages/Applications'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="jobs" element={<JobFeed />} />
           <Route path="pipeline" element={<Pipeline />} />
+          <Route path="applications" element={<Applications />} />
           <Route path="resumes" element={<ResumeStudio />} />
           <Route path="content" element={<ContentStudio />} />
           <Route path="companies" element={<CompanyRadar />} />

@@ -1,13 +1,13 @@
 import uuid
 import datetime
-from typing import Any
-from pydantic import BaseModel
+from typing import Any, List, Optional
+from pydantic import BaseModel, ConfigDict
 
 
 APPLICATION_STATUSES = [
-    "saved", "applying", "applied", "phone_screen",
-    "technical_interview", "onsite_interview", "offer",
-    "accepted", "rejected", "withdrawn", "ghosted",
+    "saved", "applying", "auto_applying", "auto_applied", "blocked",
+    "applied", "phone_screen", "technical_interview", "onsite_interview",
+    "offer", "accepted", "rejected", "withdrawn", "ghosted",
 ]
 
 
@@ -28,10 +28,21 @@ class ApplicationUpdate(BaseModel):
     custom_fields: dict[str, Any] | None = None
 
 
+class ApplicationStatusUpdate(BaseModel):
+    status: str
+    note: str = ""
+
+
 class ApplicationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     job_id: uuid.UUID | None
     status: str
+    is_auto_applied: bool = False
+    apply_method: str | None = None
+    blocked_reason: str | None = None
+    direct_apply_url: str = ""
     applied_at: datetime.datetime | None
     last_activity_at: datetime.datetime
     follow_up_at: datetime.datetime | None
@@ -39,17 +50,14 @@ class ApplicationRead(BaseModel):
     offer_amount: int | None
     notes: str
     resume_version_url: str
+    cover_letter_id: uuid.UUID | None = None
+    timeline: List[dict] = []
     custom_fields: dict[str, Any]
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
-    # Embedded job summary
+    # Flattened from related Job
     job_title: str | None = None
     company_name: str | None = None
     job_url: str | None = None
-
-    model_config = {"from_attributes": True}
-
-
-class ApplicationStatusUpdate(BaseModel):
-    status: str
+    match_score: float | None = None
