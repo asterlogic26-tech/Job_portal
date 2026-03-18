@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy to Server
 
 on:
   push:
@@ -12,12 +12,12 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Deploy to EC2 via SSH
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}      # Oracle public IP
+          username: ${{ secrets.SERVER_USER }}  # ubuntu
+          key: ${{ secrets.SERVER_SSH_KEY }}    # contents of your .pem / private key file
           port: 22
           script_stop: true
           script: |
@@ -25,4 +25,4 @@ jobs:
             export DEPLOY_BRANCH=main
             cd $APP_DIR
             bash deploy/deploy.sh 2>&1 | tee /tmp/deploy.log
-            echo "Exit code: $?"
+            echo "Deploy exit code: $?"

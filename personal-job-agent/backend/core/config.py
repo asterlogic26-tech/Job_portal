@@ -79,6 +79,10 @@ class Settings(BaseSettings):
     flower_user: str = "admin"
     flower_password: str = "admin"
 
+    # ── Daily limits (cost protection) ───────────────────────
+    max_daily_applies: int = 100      # hard cap: auto-applies per day
+    max_daily_pipelines: int = 120    # hard cap: LLM pipeline runs per day
+
     # ── Feature flags ─────────────────────────────────────────
     enable_email_notifications: bool = False
     enable_qdrant: bool = True

@@ -209,14 +209,65 @@ def _create_high_match_notification(job_id: str, title: str, company: str, score
 
 
 def _trigger_auto_apply(job_id: str, match_score: float):
-    """Queue an auto-apply task for a high-match job."""
+    """Queue an auto-apply task for a high-match job — respects daily limit."""
     try:
+        from workers.rate_limiter import check_apply_limit
+        allowed, used, limit = check_apply_limit()
+        if not allowed:
+            logger.warning(
+                "Daily apply limit reached (%d/%d) — NOT queuing auto-apply for job %s. "
+                "Limit resets at midnight UTC.",
+                used, limit, job_id,
+            )
+            # Still create a notification so the user can apply manually
+            _create_limit_reached_notification(job_id, used, limit)
+            return
+
         from workers.celery_app import celery_app
         celery_app.send_task(
             "workers.tasks.apply_tasks.auto_apply_job",
             args=[job_id, match_score],
             queue="default",
         )
-        logger.info(f"Auto-apply queued for job {job_id} (score={match_score:.0f}%)")
+        logger.info(
+            "Auto-apply queued for job %s (score=%.0f%%, daily=%d/%d)",
+            job_id, match_score, used, limit,
+        )
     except Exception as e:
         logger.error(f"Failed to queue auto-apply for {job_id}: {e}")
+
+
+def _create_limit_reached_notification(job_id: str, used: int, limit: int):
+    """Notify the user that a high-match job was found but daily limit is reached."""
+    from db_utils import get_sync_session
+    from sqlalchemy import text
+    import uuid
+
+    try:
+        with get_sync_session() as session:
+            session.execute(
+                text("""
+                INSERT INTO notifications (
+                    id, type, title, body, channel, is_read, priority,
+                    related_job_id, created_at, updated_at
+                )
+                VALUES (
+                    :id, 'limit_reached',
+                    'Daily Apply Limit Reached',
+                    :body,
+                    'in_app', false, 'medium', :job_id, NOW(), NOW()
+                )
+                """),
+                {
+                    "id": str(uuid.uuid4()),
+                    "body": (
+                        f"A high-match job was found but the daily limit of {limit} applies "
+                        f"has been reached ({used}/{limit}). Check the job manually — "
+                        "the limit resets at midnight UTC."
+                    ),
+                    "job_id": job_id,
+                },
+            )
+            session.commit()
+    except Exception as e:
+        logger.error("Failed to create limit notification: %s", e)

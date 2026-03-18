@@ -8,10 +8,17 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/opt/personal-job-agent}"
-COMPOSE="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
 BRANCH="${DEPLOY_BRANCH:-main}"
 
 cd "$APP_DIR"
+
+# Auto-detect Oracle Cloud override file
+COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+if [ -f "docker-compose.oracle.yml" ]; then
+  COMPOSE_FILES="$COMPOSE_FILES -f docker-compose.oracle.yml"
+  echo "Oracle Cloud mode: using docker-compose.oracle.yml"
+fi
+COMPOSE="docker compose $COMPOSE_FILES"
 
 echo "========================================"
 echo " Deploying Personal AI Job Agent"

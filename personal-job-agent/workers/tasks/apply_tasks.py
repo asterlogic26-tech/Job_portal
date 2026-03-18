@@ -33,7 +33,26 @@ def auto_apply_job(self, job_id: str, match_score: float = 0.0):
 
     Creates or updates an Application record, runs the auto-apply engine,
     and dispatches a ManualTask + Notification if blocked.
+
+    Hard-stops if the daily apply limit has already been reached — this is
+    the final guard in case a task was queued just before the limit was hit.
     """
+    # ── Final daily-limit guard ──────────────────────────────────────────────
+    # NOTE: matching_tasks already checked the limit before queuing, but we
+    # re-check here because multiple workers can run concurrently and the
+    # counter may have been claimed by another task in the meantime.
+    from workers.rate_limiter import get_daily_usage
+    usage = get_daily_usage()
+    if usage["applies"]["remaining"] <= 0:
+        logger.warning(
+            "HARD LIMIT: daily apply limit %d/%d already reached — "
+            "aborting auto_apply_job for %s (no retry).",
+            usage["applies"]["used"],
+            usage["applies"]["limit"],
+            job_id,
+        )
+        return  # Do NOT retry — limit is intentional
+
     try:
         asyncio.run(_auto_apply_async(job_id, match_score))
     except Exception as exc:

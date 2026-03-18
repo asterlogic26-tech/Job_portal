@@ -149,6 +149,28 @@ async def logs_for_job(
     return await svc.list_logs(job_id=job_id, page=page, page_size=page_size)
 
 
+# ── Daily limits ─────────────────────────────────────────────────────────────
+
+@router.get("/limits")
+async def get_daily_limits():
+    """Return today's apply and pipeline usage vs configured limits.
+
+    Use this on the dashboard to show how many auto-applies remain today
+    and the estimated API cost so far.
+
+    Example response::
+
+        {
+          "date": "2026-03-18",
+          "applies":   {"used": 12, "limit": 100, "remaining": 88, "pct": 12.0},
+          "pipelines": {"used": 14, "limit": 120, "remaining": 106, "pct": 11.7},
+          "estimated_cost_usd": 0.65
+        }
+    """
+    from workers.rate_limiter import get_daily_usage
+    return get_daily_usage()
+
+
 # ── Discovery ─────────────────────────────────────────────────────────────────
 
 @router.get("/available")

@@ -24,7 +24,18 @@ def run_agent_pipeline(self, job_id: str):
 
     Loads job + profile from the DB via a sync session, runs the
     orchestrator in an async event loop, and persists all agent logs.
+    Aborts (no retry) if the daily LLM pipeline limit is reached.
     """
+    from workers.rate_limiter import check_pipeline_limit
+    allowed, used, limit = check_pipeline_limit()
+    if not allowed:
+        logger.warning(
+            "Daily pipeline limit reached (%d/%d) — aborting agent pipeline "
+            "for job %s. Limit resets at midnight UTC.",
+            used, limit, job_id,
+        )
+        return  # intentional — no retry
+
     try:
         asyncio.run(_run_pipeline_async(job_id))
     except Exception as exc:
