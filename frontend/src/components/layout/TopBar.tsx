@@ -5,7 +5,7 @@ import { jobsApi } from '@/api/jobs'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-export function TopBar() {
+export default function TopBar() {
   const qc = useQueryClient()
   const [showNotifs, setShowNotifs] = useState(false)
 
