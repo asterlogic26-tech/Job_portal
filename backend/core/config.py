@@ -75,6 +75,10 @@ class Settings(BaseSettings):
     match_score_threshold: int = 50
     high_match_threshold: int = 75
 
+    # ── Admin credentials (single-user login) ─────────────────
+    admin_email: str = "admin@example.com"
+    admin_password: str = "changeme"
+
     # ── Flower monitoring ─────────────────────────────────────
     flower_user: str = "admin"
     flower_password: str = "admin"
