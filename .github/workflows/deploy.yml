@@ -20,9 +20,26 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           command_timeout: 25m
-          script_stop: true
+          script_stop: false
           script: |
-            export APP_DIR=/opt/personal-job-agent
-            export DEPLOY_BRANCH=main
-            bash $APP_DIR/deploy/deploy.sh 2>&1 | tee /tmp/deploy.log
-            echo "Exit code: $?"
+            set -e
+            APP_DIR=/opt/personal-job-agent
+            cd $APP_DIR
+
+            # Write credentials to .env (idempotent)
+            update_env() {
+              local key=$1 val=$2
+              if grep -q "^${key}=" .env 2>/dev/null; then
+                sed -i "s|^${key}=.*|${key}=${val}|" .env
+              else
+                echo "${key}=${val}" >> .env
+              fi
+            }
+
+            update_env ADMIN_EMAIL    "${{ secrets.ADMIN_EMAIL }}"
+            update_env ADMIN_PASSWORD "${{ secrets.ADMIN_PASSWORD }}"
+            update_env SECRET_KEY     "${{ secrets.SECRET_KEY }}"
+            update_env OPENAI_API_KEY "${{ secrets.OPENAI_API_KEY }}"
+
+            bash deploy/deploy.sh 2>&1 | tee /tmp/deploy.log
+            echo "Deploy exit code: $?"

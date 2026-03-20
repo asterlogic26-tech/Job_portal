@@ -4,6 +4,7 @@
 #
 # Called by: GitHub Actions CI/CD on every push to main
 # Can also be run manually: bash deploy/deploy.sh
+# Note: nginx runs on the HOST (not Docker) — managed separately
 # =============================================================================
 set -euo pipefail
 
@@ -58,7 +59,13 @@ $COMPOSE run --rm backend \
 # ── 5. Restart application services ──────────────────────────────────────────
 echo ""
 echo "[5/5] Restarting application services..."
-$COMPOSE up -d backend worker celery-beat flower frontend nginx
+$COMPOSE up -d backend worker celery-beat flower frontend
+
+# Reload host nginx (nginx runs on host, not in Docker)
+if systemctl is-active --quiet nginx; then
+  echo "Reloading host nginx..."
+  sudo systemctl reload nginx
+fi
 
 # ── Clean up ──────────────────────────────────────────────────────────────────
 docker image prune -f
@@ -66,8 +73,8 @@ docker image prune -f
 # ── Health check ─────────────────────────────────────────────────────────────
 echo ""
 echo "Checking backend health..."
-sleep 8
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8000/health" || echo "000")
+sleep 10
+STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "http://localhost:8000/health" || echo "000")
 if [ "$STATUS" = "200" ]; then
   echo "Backend is healthy (HTTP 200)"
 else
@@ -78,5 +85,5 @@ fi
 echo ""
 echo "========================================"
 echo " Deploy complete!"
-echo " Site: http://35.200.193.142"
+echo " Site: https://networknimble.info"
 echo "========================================"
