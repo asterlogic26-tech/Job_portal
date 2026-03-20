@@ -6,6 +6,7 @@ Create Date: 2026-03-17 00:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
 
 revision = "001"
@@ -109,8 +110,8 @@ def upgrade() -> None:
             server_default=sa.text("now()"),
         ),
     )
-    op.create_index("ix_companies_name_trgm", "companies", ["name"], postgresql_using="gin",
-                    postgresql_ops={"name": "gin_trgm_ops"})
+    op.create_index("ix_companies_name_trgm", "companies",
+                    [text("name gin_trgm_ops")], postgresql_using="gin")
 
     # ── company_signals ───────────────────────────────────────────────────────
     op.create_table(
@@ -217,14 +218,10 @@ def upgrade() -> None:
     op.create_index("ix_jobs_is_hidden", "jobs", ["is_hidden"])
     op.create_index("ix_jobs_is_saved", "jobs", ["is_saved"])
     op.create_index("ix_jobs_created_at", "jobs", ["created_at"])
-    op.create_index(
-        "ix_jobs_title_trgm", "jobs", ["title"],
-        postgresql_using="gin", postgresql_ops={"title": "gin_trgm_ops"}
-    )
-    op.create_index(
-        "ix_jobs_company_name_trgm", "jobs", ["company_name"],
-        postgresql_using="gin", postgresql_ops={"company_name": "gin_trgm_ops"}
-    )
+    op.create_index("ix_jobs_title_trgm", "jobs",
+                    [text("title gin_trgm_ops")], postgresql_using="gin")
+    op.create_index("ix_jobs_company_name_trgm", "jobs",
+                    [text("company_name gin_trgm_ops")], postgresql_using="gin")
 
     # ── job_matches ───────────────────────────────────────────────────────────
     op.create_table(

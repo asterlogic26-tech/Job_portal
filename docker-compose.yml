@@ -123,6 +123,12 @@ services:
     command: >
       sh -c "alembic -c backend/alembic.ini upgrade head &&
              uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir backend"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
     restart: unless-stopped
 
   worker:
