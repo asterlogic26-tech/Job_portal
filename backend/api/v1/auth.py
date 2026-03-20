@@ -34,7 +34,7 @@ def create_access_token(data: dict) -> str:
 
 @router.post("/login", response_model=Token)
 async def login(body: LoginRequest):
-    if body.email != settings.admin_email:
+    if body.email.lower().strip() != settings.admin_email.lower().strip():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if body.password != settings.admin_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
