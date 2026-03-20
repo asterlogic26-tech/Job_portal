@@ -12,6 +12,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: ['networknimble.info', 'www.networknimble.info'],
     proxy: {
       '/api': {
         target: 'http://backend:8000',
