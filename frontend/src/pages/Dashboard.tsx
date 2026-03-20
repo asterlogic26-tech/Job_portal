@@ -52,10 +52,11 @@ function StatCard({
 }
 
 export default function Dashboard() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['dashboard'],
     queryFn: dashboardApi.getSummary,
     refetchInterval: 60_000,
+    retry: 2,
   })
 
   if (isLoading) {
@@ -68,7 +69,16 @@ export default function Dashboard() {
     )
   }
 
-  const d = data!
+  if (isError || !data) {
+    return (
+      <div className="p-8 flex flex-col items-center justify-center gap-3 text-gray-500">
+        <p className="text-lg font-medium">Could not load dashboard data</p>
+        <p className="text-sm">The backend may still be starting up. Retrying automatically…</p>
+      </div>
+    )
+  }
+
+  const d = data
 
   return (
     <div className="p-8 space-y-8">
