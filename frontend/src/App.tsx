@@ -13,6 +13,7 @@ import ProfileHealth from './pages/ProfileHealth'
 import Settings from './pages/Settings'
 import Dashboard from './pages/Dashboard'
 import Applications from './pages/Applications'
+import ProfileSetup from './pages/ProfileSetup'
 
 export default function App() {
   return (
@@ -37,7 +38,7 @@ export default function App() {
           <Route path="companies" element={<CompanyRadar />} />
           <Route path="tasks" element={<ManualTaskQueue />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="profile" element={<ProfileHealth />} />
+          <Route path="profile" element={<ProfileSetup />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

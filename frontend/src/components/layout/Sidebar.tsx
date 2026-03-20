@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Search, Kanban, FileText, MessageSquare,
-  Building2, ClipboardList, BarChart3, User, Settings, Bot
+  Building2, ClipboardList, BarChart3, User, Settings, Bot, LogOut
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -19,6 +19,13 @@ const navItems = [
 ]
 
 export default function Sidebar() {
+  const navigate = useNavigate()
+
+  function logout() {
+    localStorage.removeItem('access_token')
+    navigate('/login', { replace: true })
+  }
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
       {/* Logo */}
@@ -56,8 +63,15 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 space-y-2">
         <div className="text-xs text-gray-400 text-center">v1.0.0 — Single User Mode</div>
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+        >
+          <LogOut size={14} />
+          Sign out
+        </button>
       </div>
     </aside>
   )

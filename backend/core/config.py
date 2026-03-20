@@ -35,15 +35,20 @@ class Settings(BaseSettings):
     celery_result_backend: str = "redis://localhost:6379/1"
 
     # ── LLM ──────────────────────────────────────────────────
+    # Cost budget: ₹1000/month (~$12). Use Haiku for all routine tasks.
+    # Sonnet only for resume/cover-letter writing (max 3/day).
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     llm_primary_provider: str = "anthropic"
-    llm_primary_model: str = "claude-sonnet-4-6"
+    llm_primary_model: str = "claude-haiku-4-5-20251001"   # cheap: $0.80/MTok in
+    llm_quality_model: str = "claude-sonnet-4-6"            # quality: resume/outreach only
     llm_fast_model: str = "claude-haiku-4-5-20251001"
     llm_fallback_provider: str = "openai"
     llm_fallback_model: str = "gpt-4o-mini"
-    llm_max_tokens: int = 2048
+    llm_max_tokens: int = 1024                              # keep responses short
     llm_temperature: float = 0.3
+    # Daily LLM budget guard (approx tokens)
+    llm_max_daily_tokens: int = 400_000                    # ~$0.40/day = $12/month
 
     # ── Embeddings / Vector ───────────────────────────────────
     qdrant_url: str = "http://localhost:6333"
@@ -83,9 +88,11 @@ class Settings(BaseSettings):
     flower_user: str = "admin"
     flower_password: str = "admin"
 
-    # ── Daily limits (cost protection) ───────────────────────
-    max_daily_applies: int = 100      # hard cap: auto-applies per day
-    max_daily_pipelines: int = 120    # hard cap: LLM pipeline runs per day
+    # ── Application limits ────────────────────────────────────
+    max_daily_applies: int = 5        # auto-applies per day (5/day = ~100/month)
+    max_monthly_applies: int = 100    # hard monthly cap
+    prefer_india_first: bool = True   # apply India jobs before international
+    max_daily_pipelines: int = 30     # LLM pipeline runs per day (cost control)
 
     # ── Feature flags ─────────────────────────────────────────
     enable_email_notifications: bool = False
