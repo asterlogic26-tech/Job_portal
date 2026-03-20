@@ -15,6 +15,10 @@ export const authApi = {
     const res = await apiClient.post<Token>('/auth/login', data)
     return res.data
   },
+  register: async (data: LoginRequest): Promise<Token> => {
+    const res = await apiClient.post<Token>('/auth/register', data)
+    return res.data
+  },
   me: async () => {
     const res = await apiClient.get('/auth/me')
     return res.data

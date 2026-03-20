@@ -4,7 +4,7 @@ import { Bot, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { authApi } from '@/api/auth'
 import toast from 'react-hot-toast'
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -15,11 +15,13 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     try {
-      const data = await authApi.login({ email, password })
+      const data = await authApi.register({ email, password })
       localStorage.setItem('access_token', data.access_token)
+      toast.success('Account created! Welcome.')
       navigate('/dashboard', { replace: true })
-    } catch {
-      toast.error('Invalid email or password')
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || 'Registration failed'
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -34,12 +36,12 @@ export default function Login() {
             <Bot className="w-9 h-9 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">AI Job Agent</h1>
-          <p className="text-sm text-gray-500 mt-1">Personal Command Center</p>
+          <p className="text-sm text-gray-500 mt-1">Create your account</p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Sign in to your account</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-6">Set up your account</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
@@ -58,12 +60,13 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password
+                Password <span className="text-gray-400 font-normal">(min 6 characters)</span>
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -87,23 +90,23 @@ export default function Login() {
               {loading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Signing in…
+                  Creating account…
                 </>
               ) : (
-                'Sign in'
+                'Create account'
               )}
             </button>
           </form>
+
+          <p className="text-center text-sm text-gray-500 mt-5">
+            Already have an account?{' '}
+            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+              Sign in
+            </Link>
+          </p>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
-          No account?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline font-medium">
-            Register here
-          </Link>
-        </p>
-
-        <p className="text-center text-xs text-gray-400 mt-3">
+        <p className="text-center text-xs text-gray-400 mt-6">
           Single-user personal assistant · v1.0.0
         </p>
       </div>
