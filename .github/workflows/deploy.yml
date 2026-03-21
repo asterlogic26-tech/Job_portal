@@ -30,7 +30,7 @@ jobs:
             update_env() {
               local key=$1 val=$2
               if grep -q "^${key}=" .env 2>/dev/null; then
-                sed -i "s|^${key}=.*|${key}=${val}|" .env
+                sed "s|^${key}=.*|${key}=${val}|" .env > /tmp/.env.tmp && mv /tmp/.env.tmp .env
               else
                 echo "${key}=${val}" >> .env
               fi
