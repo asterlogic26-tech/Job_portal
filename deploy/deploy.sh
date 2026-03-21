@@ -4,7 +4,12 @@
 #
 # Called by: GitHub Actions CI/CD on every push to main
 # Can also be run manually: bash deploy/deploy.sh
-# Note: nginx runs on the HOST (not Docker) — managed separately
+#
+# Production stack:
+#   docker-compose.yml          — base services (dev defaults)
+#   docker-compose.prod.yml     — prod overrides: built frontend, docker nginx,
+#                                  certbot, no exposed DB/backend ports
+# SSL certs live in Docker named volume "letsencrypt" (created by init_ssl.sh)
 # =============================================================================
 set -euo pipefail
 
@@ -19,7 +24,7 @@ if docker compose version &>/dev/null 2>&1; then
 else
   DC="docker-compose"
 fi
-COMPOSE="$DC -f docker-compose.yml"
+COMPOSE="$DC -f docker-compose.yml -f docker-compose.prod.yml"
 
 echo "========================================"
 echo " Deploying Personal AI Job Agent"
@@ -59,27 +64,24 @@ $COMPOSE run --rm backend \
 # ── 5. Restart application services ──────────────────────────────────────────
 echo ""
 echo "[5/5] Restarting application services..."
-$COMPOSE up -d backend worker celery-beat flower frontend
-
-# Reload host nginx (nginx runs on host, not in Docker)
-if systemctl is-active --quiet nginx; then
-  echo "Reloading host nginx..."
-  sudo systemctl reload nginx
-fi
+$COMPOSE up -d backend worker celery-beat flower frontend nginx certbot
 
 # ── Clean up ──────────────────────────────────────────────────────────────────
 docker image prune -f
 
 # ── Health check ─────────────────────────────────────────────────────────────
 echo ""
-echo "Checking backend health..."
-sleep 10
-STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "http://localhost:8000/health" || echo "000")
+echo "Checking backend health (via nginx)..."
+sleep 15
+STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "https://networknimble.info/api/v1/health" || echo "000")
 if [ "$STATUS" = "200" ]; then
   echo "Backend is healthy (HTTP 200)"
 else
-  echo "WARNING: Backend returned HTTP $STATUS"
+  echo "WARNING: Backend returned HTTP $STATUS — checking internal..."
+  # Fallback: check via docker exec in case nginx is still warming up
+  $COMPOSE exec -T backend curl -sf http://localhost:8000/health && echo "Backend internal OK" || echo "Backend internal also unhealthy"
   echo "Check logs: $DC logs backend"
+  echo "Check nginx: $DC logs nginx"
 fi
 
 echo ""
