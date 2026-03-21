@@ -15,38 +15,38 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # New columns on applications
-    op.add_column("applications", sa.Column("is_auto_applied", sa.Boolean(), server_default="false", nullable=False))
-    op.add_column("applications", sa.Column("apply_method", sa.String(50), nullable=True))
-    op.add_column("applications", sa.Column("blocked_reason", sa.Text(), nullable=True))
-    op.add_column("applications", sa.Column("direct_apply_url", sa.Text(), server_default="", nullable=False))
-    op.add_column("applications", sa.Column("timeline", postgresql.JSONB(), server_default="[]", nullable=False))
+    # Create auth_users if missing (old conflicting migration 003 may have skipped it)
+    op.execute("""
+        CREATE TABLE IF NOT EXISTS auth_users (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            email VARCHAR(255) NOT NULL,
+            hashed_password VARCHAR(255) NOT NULL,
+            is_active BOOLEAN NOT NULL DEFAULT true,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+    """)
+    op.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_auth_users_email ON auth_users (email)")
 
-    # Indexes for common filter queries (skip if already exist from migration 001)
-    try:
-        op.create_index("ix_applications_is_auto_applied", "applications", ["is_auto_applied"])
-    except Exception:
-        pass
-    try:
-        op.create_index("ix_applications_status", "applications", ["status"])
-    except Exception:
-        pass
-    try:
-        op.create_index("ix_applications_user_id", "applications", ["user_id"])
-    except Exception:
-        pass
+    # New columns on applications (skip if already exist)
+    op.execute("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_auto_applied BOOLEAN NOT NULL DEFAULT false")
+    op.execute("ALTER TABLE applications ADD COLUMN IF NOT EXISTS apply_method VARCHAR(50)")
+    op.execute("ALTER TABLE applications ADD COLUMN IF NOT EXISTS blocked_reason TEXT")
+    op.execute("ALTER TABLE applications ADD COLUMN IF NOT EXISTS direct_apply_url TEXT NOT NULL DEFAULT ''")
+    op.execute("ALTER TABLE applications ADD COLUMN IF NOT EXISTS timeline JSONB NOT NULL DEFAULT '[]'")
 
-    # Ensure ManualTask has action_url column (in case it doesn't)
-    try:
-        op.add_column("manual_tasks", sa.Column("action_url", sa.Text(), server_default="", nullable=True))
-    except Exception:
-        pass  # already exists
+    # Indexes — IF NOT EXISTS avoids transaction-aborting duplicates
+    op.execute("CREATE INDEX IF NOT EXISTS ix_applications_is_auto_applied ON applications (is_auto_applied)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_applications_status ON applications (status)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_applications_user_id ON applications (user_id)")
+
+    # action_url on manual_tasks
+    op.execute("ALTER TABLE manual_tasks ADD COLUMN IF NOT EXISTS action_url TEXT DEFAULT ''")
 
 
 def downgrade() -> None:
-    op.drop_index("ix_applications_status", "applications")
-    op.drop_index("ix_applications_is_auto_applied", "applications")
-    op.drop_index("ix_applications_user_id", "applications")
+    op.execute("DROP INDEX IF EXISTS ix_applications_status")
+    op.execute("DROP INDEX IF EXISTS ix_applications_is_auto_applied")
+    op.execute("DROP INDEX IF EXISTS ix_applications_user_id")
     op.drop_column("applications", "timeline")
     op.drop_column("applications", "direct_apply_url")
     op.drop_column("applications", "blocked_reason")
