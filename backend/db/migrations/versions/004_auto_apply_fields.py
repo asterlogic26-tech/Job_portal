@@ -22,10 +22,19 @@ def upgrade() -> None:
     op.add_column("applications", sa.Column("direct_apply_url", sa.Text(), server_default="", nullable=False))
     op.add_column("applications", sa.Column("timeline", postgresql.JSONB(), server_default="[]", nullable=False))
 
-    # Indexes for common filter queries
-    op.create_index("ix_applications_is_auto_applied", "applications", ["is_auto_applied"])
-    op.create_index("ix_applications_status", "applications", ["status"])
-    op.create_index("ix_applications_user_id", "applications", ["user_id"])
+    # Indexes for common filter queries (skip if already exist from migration 001)
+    try:
+        op.create_index("ix_applications_is_auto_applied", "applications", ["is_auto_applied"])
+    except Exception:
+        pass
+    try:
+        op.create_index("ix_applications_status", "applications", ["status"])
+    except Exception:
+        pass
+    try:
+        op.create_index("ix_applications_user_id", "applications", ["user_id"])
+    except Exception:
+        pass
 
     # Ensure ManualTask has action_url column (in case it doesn't)
     try:

@@ -20,7 +20,7 @@ export default function Register() {
       toast.success('Account created! Welcome.')
       navigate('/dashboard', { replace: true })
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || 'Registration failed'
+      const msg = err?.response?.data?.detail || err?.message || 'Registration failed'
       toast.error(msg)
     } finally {
       setLoading(false)
