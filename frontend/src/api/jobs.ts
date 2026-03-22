@@ -34,13 +34,17 @@ export interface JobListResponse {
 export interface JobSearchParams {
   page?: number
   page_size?: number
+  q?: string
+  remote_only?: boolean
+  saved_only?: boolean
   remote_policy?: string
   seniority_level?: string
   salary_min?: number
   salary_max?: number
-  min_match_score?: number
+  min_score?: number
   status?: string
   sort_by?: string
+  source?: string
 }
 
 export const jobsApi = {

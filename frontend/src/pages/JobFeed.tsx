@@ -5,7 +5,7 @@ import { applicationsApi } from '@/api/applications'
 import {
   Search, MapPin, Clock, DollarSign,
   Bookmark, BookmarkCheck, EyeOff, ExternalLink,
-  ChevronDown, Filter,
+  ChevronDown, Filter, RefreshCw,
 } from 'lucide-react'
 import clsx from 'clsx'
 import toast from 'react-hot-toast'
@@ -69,6 +69,12 @@ export default function JobFeed() {
     },
   })
 
+  const scanJobs = useMutation({
+    mutationFn: jobsApi.triggerDiscovery,
+    onSuccess: () => toast.success('Job scan started! Check back in a few minutes.'),
+    onError: () => toast.error('Failed to start scan'),
+  })
+
   const jobs = data?.items ?? []
   const total = data?.total ?? 0
 
@@ -109,9 +115,17 @@ export default function JobFeed() {
           </div>
         </div>
 
-        {/* Count */}
-        <div className="px-4 py-2 text-xs text-gray-400 border-b">
-          {total} jobs found
+        {/* Count + Scan button */}
+        <div className="px-4 py-2 text-xs text-gray-400 border-b flex items-center justify-between">
+          <span>{total} jobs found</span>
+          <button
+            onClick={() => scanJobs.mutate()}
+            disabled={scanJobs.isPending}
+            className="flex items-center gap-1 text-blue-600 hover:text-blue-700 disabled:opacity-50"
+          >
+            <RefreshCw size={11} className={scanJobs.isPending ? 'animate-spin' : ''} />
+            {scanJobs.isPending ? 'Scanning…' : 'Scan now'}
+          </button>
         </div>
 
         {/* List */}
