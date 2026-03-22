@@ -1,5 +1,7 @@
+import os
 import uuid
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.deps import get_session, get_user_id
 from backend.schemas.profile import ProfileRead, ProfileUpdate, ProfileHealthRead
@@ -46,6 +48,17 @@ async def upload_resume(
 ):
     url = await svc.upload_resume(user_id, file)
     return MessageResponse(message=f"Resume uploaded: {url}")
+
+
+@router.get("/resume-file")
+async def download_resume(user_id: uuid.UUID = Depends(get_user_id)):
+    filepath = f"/app/uploads/resumes/{user_id}"
+    if not os.path.isdir(filepath):
+        raise HTTPException(status_code=404, detail="No resume found")
+    files = os.listdir(filepath)
+    if not files:
+        raise HTTPException(status_code=404, detail="No resume found")
+    return FileResponse(os.path.join(filepath, files[0]))
 
 
 @router.post("/refresh-embedding", response_model=MessageResponse)

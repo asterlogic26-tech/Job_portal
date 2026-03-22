@@ -112,6 +112,8 @@ services:
       # Exclude local build artifacts
       - /app/backend/__pycache__
       - /app/frontend
+      # Named volume for uploaded files (writable by container regardless of host permissions)
+      - uploads_data:/app/uploads
     ports:
       - "8000:8000"
     depends_on:
@@ -253,3 +255,4 @@ volumes:
   qdrant_data:
   minio_data:
   beat_data:
+  uploads_data:
