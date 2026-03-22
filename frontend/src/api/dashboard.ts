@@ -22,5 +22,5 @@ export interface DashboardSummary {
 
 export const dashboardApi = {
   getSummary: () =>
-    apiClient.get<DashboardSummary>('/dashboard').then((r) => r.data),
+    apiClient.get<DashboardSummary>('/dashboard/summary').then((r) => r.data),
 }
