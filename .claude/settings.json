@@ -3,7 +3,11 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(grep -E \"\\\\.\\(py|yml|yaml\\)$\")",
+      "Bash(grep -n \"linkedin\\\\|indeed\\\\|naukri\\\\|glassdoor\" /d/AsterLogic/Job_portal/config/sources.yml /d/AsterLogic/Job_portal/workers/tasks/discovery_tasks.py /d/AsterLogic/Job_portal/crawlers/job_crawler/spiders/*.py 2)",
+      "Bash(/dev/null -i)",
+      "Bash(grep -E \"\\\\.py$\")"
     ]
   }
 }
