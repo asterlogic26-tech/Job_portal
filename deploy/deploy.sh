@@ -41,7 +41,7 @@ git reset --hard "origin/$BRANCH"
 # ── 2. Build changed images ───────────────────────────────────────────────────
 echo ""
 echo "[2/5] Building images..."
-$COMPOSE build --no-cache backend worker frontend
+$COMPOSE build backend worker frontend
 
 # ── 3. Bring up infrastructure ────────────────────────────────────────────────
 echo ""
