@@ -25,7 +25,8 @@ export default function ContentStudio() {
   const qc = useQueryClient()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showGenerate, setShowGenerate] = useState(false)
-  const [genType, setGenType] = useState('cover_letter')
+  const [genType, setGenType] = useState('linkedin_post')
+  const [genTopic, setGenTopic] = useState('')
   const [editing, setEditing] = useState(false)
   const [editBody, setEditBody] = useState('')
   const [filterType, setFilterType] = useState<string>('')
@@ -36,11 +37,13 @@ export default function ContentStudio() {
   })
 
   const generate = useMutation({
-    mutationFn: (type: string) => contentApi.generate({ content_type: type }),
+    mutationFn: ({ type, topic }: { type: string; topic: string }) =>
+      contentApi.generate({ content_type: type, extra_context: topic || undefined }),
     onSuccess: (newItem) => {
       qc.invalidateQueries({ queryKey: ['content'] })
       setSelectedId(newItem.id)
       setShowGenerate(false)
+      setGenTopic('')
       toast.success('Content draft generated!')
     },
     onError: () => toast.error('Generation failed'),
@@ -151,9 +154,19 @@ export default function ContentStudio() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Topic / Instructions</label>
+                <textarea
+                  value={genTopic}
+                  onChange={(e) => setGenTopic(e.target.value)}
+                  placeholder="e.g. Write a post about the latest AI news this week, specifically about new LLM releases..."
+                  rows={4}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
               <div className="flex gap-3">
                 <button
-                  onClick={() => generate.mutate(genType)}
+                  onClick={() => generate.mutate({ type: genType, topic: genTopic })}
                   disabled={generate.isPending}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
