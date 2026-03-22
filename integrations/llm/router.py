@@ -29,11 +29,11 @@ def get_llm_client(task_type: str = "primary") -> Optional[BaseLLMClient]:
     if task_type == "primary":
         if provider == "anthropic" and anthropic_key:
             from integrations.llm.anthropic_client import AnthropicClient
-            model = os.environ.get("LLM_PRIMARY_MODEL", "claude-sonnet-4-6")
+            model = os.environ.get("LLM_PRIMARY_MODEL", "claude-haiku-4-5-20251001")
             client = AnthropicClient(api_key=anthropic_key, model=model)
         elif openai_key:
             from integrations.llm.openai_client import OpenAIClient
-            client = OpenAIClient(api_key=openai_key, model="gpt-4o")
+            client = OpenAIClient(api_key=openai_key, model="gpt-4o-mini")
     else:  # cheap
         if provider == "anthropic" and anthropic_key:
             from integrations.llm.anthropic_client import AnthropicClient

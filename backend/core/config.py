@@ -41,14 +41,14 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     llm_primary_provider: str = "anthropic"
     llm_primary_model: str = "claude-haiku-4-5-20251001"   # cheap: $0.80/MTok in
-    llm_quality_model: str = "claude-sonnet-4-6"            # quality: resume/outreach only
+    llm_quality_model: str = "claude-haiku-4-5-20251001"    # cost control: Haiku only
     llm_fast_model: str = "claude-haiku-4-5-20251001"
     llm_fallback_provider: str = "openai"
     llm_fallback_model: str = "gpt-4o-mini"
-    llm_max_tokens: int = 1024                              # keep responses short
+    llm_max_tokens: int = 600                               # keep responses short
     llm_temperature: float = 0.3
     # Daily LLM budget guard (approx tokens)
-    llm_max_daily_tokens: int = 400_000                    # ~$0.40/day = $12/month
+    llm_max_daily_tokens: int = 100_000                    # ~$0.08/day = ~$2.50/month
 
     # ── Embeddings / Vector ───────────────────────────────────
     qdrant_url: str = "http://localhost:6333"
@@ -92,7 +92,7 @@ class Settings(BaseSettings):
     max_daily_applies: int = 5        # auto-applies per day (5/day = ~100/month)
     max_monthly_applies: int = 100    # hard monthly cap
     prefer_india_first: bool = True   # apply India jobs before international
-    max_daily_pipelines: int = 30     # LLM pipeline runs per day (cost control)
+    max_daily_pipelines: int = 10     # LLM pipeline runs per day (cost control)
 
     # ── Feature flags ─────────────────────────────────────────
     enable_email_notifications: bool = False
