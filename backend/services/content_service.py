@@ -60,18 +60,15 @@ class ContentService:
                     "required_skills": job.required_skills,
                 }
 
+        from types import SimpleNamespace
+        job_obj = SimpleNamespace(**job_data) if job_data else None
+
         generator = ContentGenerator()
         result = await generator.generate(
             content_type=payload.content_type,
-            profile_data={
-                "full_name": profile.full_name,
-                "current_title": profile.current_title,
-                "skills": profile.skills,
-                "experience_years": profile.experience_years,
-                "bio": profile.bio,
-            },
-            job_data=job_data,
-            extra_context=payload.extra_context,
+            profile=profile,
+            job=job_obj,
+            additional_context=payload.extra_context,
         )
 
         content = Content(
