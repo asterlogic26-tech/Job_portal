@@ -61,10 +61,20 @@ class ProfileService:
             return "minio-disabled"
 
         from integrations.storage.document_store import DocumentStore
-        store = DocumentStore()
+        store = DocumentStore(
+            url=f"http://{settings.minio_endpoint}",
+            access_key=settings.minio_access_key,
+            secret_key=settings.minio_secret_key,
+        )
         content = await file.read()
         key = f"resumes/{user_id}/{file.filename}"
-        url = await store.upload(bucket=settings.minio_bucket_resumes, key=key, data=content)
+        success = store.upload(bucket=settings.minio_bucket_resumes, key=key, data=content)
+        if not success:
+            raise ValueError("File upload to storage failed")
+
+        url = store.get_presigned_url(bucket=settings.minio_bucket_resumes, key=key, expires_hours=24 * 365)
+        if not url:
+            url = f"http://{settings.minio_endpoint}/{settings.minio_bucket_resumes}/{key}"
 
         profile = await self.db.get(UserProfile, user_id)
         if profile:
