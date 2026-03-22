@@ -108,7 +108,7 @@ class ProfileService:
         text = f"{profile.current_title} {' '.join(skill_names)} {profile.bio}"
         embedding = embed_text(text)
 
-        store = VectorStore()
+        store = VectorStore(url=settings.qdrant_url, collection_name="profiles")
         point_id = str(user_id)
         await store.upsert("profiles", point_id, embedding, {"user_id": str(user_id)})
 
