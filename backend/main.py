@@ -1,7 +1,9 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from backend.core.config import settings
 from backend.core.logging import setup_logging, get_logger
@@ -50,6 +52,11 @@ app.add_exception_handler(Exception, generic_error_handler)
 
 # Routes
 app.include_router(api_router, prefix=settings.api_prefix)
+
+# Serve locally uploaded files (resume fallback when MinIO is unavailable)
+_uploads_dir = "/app/uploads"
+os.makedirs(_uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
 
 
 @app.get("/health", tags=["meta"])

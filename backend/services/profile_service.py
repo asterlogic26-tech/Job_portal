@@ -57,24 +57,37 @@ class ProfileService:
         )
 
     async def upload_resume(self, user_id: uuid.UUID, file: UploadFile) -> str:
-        if not settings.enable_minio:
-            return "minio-disabled"
-
-        from integrations.storage.document_store import DocumentStore
-        store = DocumentStore(
-            url=f"http://{settings.minio_endpoint}",
-            access_key=settings.minio_access_key,
-            secret_key=settings.minio_secret_key,
-        )
+        import os
         content = await file.read()
-        key = f"resumes/{user_id}/{file.filename}"
-        success = store.upload(bucket=settings.minio_bucket_resumes, key=key, data=content)
-        if not success:
-            raise ValueError("File upload to storage failed")
+        filename = file.filename or "resume.pdf"
+        url = None
 
-        url = store.get_presigned_url(bucket=settings.minio_bucket_resumes, key=key, expires_hours=24 * 365)
+        # Try MinIO first
+        if settings.enable_minio:
+            try:
+                from integrations.storage.document_store import DocumentStore
+                store = DocumentStore(
+                    url=f"http://{settings.minio_endpoint}",
+                    access_key=settings.minio_access_key,
+                    secret_key=settings.minio_secret_key,
+                )
+                key = f"resumes/{user_id}/{filename}"
+                success = store.upload(bucket=settings.minio_bucket_resumes, key=key, data=content)
+                if success:
+                    url = store.get_presigned_url(bucket=settings.minio_bucket_resumes, key=key, expires_hours=24 * 365)
+                    if not url:
+                        url = f"http://{settings.minio_endpoint}/{settings.minio_bucket_resumes}/{key}"
+            except Exception:
+                url = None  # fall through to local storage
+
+        # Fall back to local disk storage
         if not url:
-            url = f"http://{settings.minio_endpoint}/{settings.minio_bucket_resumes}/{key}"
+            upload_dir = f"/app/uploads/resumes/{user_id}"
+            os.makedirs(upload_dir, exist_ok=True)
+            filepath = f"{upload_dir}/{filename}"
+            with open(filepath, "wb") as f:
+                f.write(content)
+            url = f"/uploads/resumes/{user_id}/{filename}"
 
         profile = await self.db.get(UserProfile, user_id)
         if profile:
