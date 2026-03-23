@@ -99,7 +99,7 @@ async def _normalize_async(raw: dict) -> Optional[dict]:
                 "id": job_id,
                 "external_id": external_id,
                 "source": raw.get("source", "unknown"),
-                "url": raw.get("source_url", ""),
+                "url": raw.get("source_url") or raw.get("apply_url", ""),
                 "company_name": extracted.get("company_name") or company,
                 "title": title,
                 "normalized_title": normalized_title,
