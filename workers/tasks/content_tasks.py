@@ -17,7 +17,7 @@ def generate_daily_content_suggestions():
 
 async def _generate_daily_async():
     from engines.content.generator import ContentGenerator
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
 
     logger.info("Generating daily content suggestions...")

@@ -12,7 +12,7 @@ SINGLE_USER_ID = "00000000-0000-0000-0000-000000000001"
 @celery_app.task(name="workers.tasks.profile_tasks.check_profile_health")
 def check_profile_health():
     """Check profile health and create refresh suggestions."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     import uuid
 
@@ -73,7 +73,7 @@ def check_profile_health():
 @celery_app.task(name="workers.tasks.profile_tasks.refresh_profile_vector")
 def refresh_profile_vector():
     """Regenerate the user profile embedding vector."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     from engines.embedding.embedder import embed_text
     from engines.embedding.vector_store import VectorStore

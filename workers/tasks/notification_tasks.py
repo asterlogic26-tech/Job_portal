@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 @celery_app.task(name="workers.tasks.notification_tasks.send_digest")
 def send_digest():
     """Send daily digest email/notification."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     import uuid
 
@@ -75,7 +75,7 @@ def send_digest():
 @celery_app.task(name="workers.tasks.notification_tasks.send_followup_reminders")
 def send_followup_reminders():
     """Send follow-up reminders for applications due today."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     import uuid
 

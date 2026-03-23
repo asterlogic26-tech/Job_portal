@@ -24,7 +24,7 @@ def compute_job_match(self, job_id: str):
 @celery_app.task(name="workers.tasks.matching_tasks.compute_all_matches")
 def compute_all_matches():
     """Recompute match scores for all unmatched jobs."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
 
     logger.info("Computing match scores for all unanalyzed jobs...")
@@ -45,7 +45,7 @@ def compute_all_matches():
 
 async def _compute_match_async(job_id: str):
     """Async match computation."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     from engines.matching.matcher import compute_match_score
     from engines.predictor.predictor import predict_interview_probability
@@ -188,7 +188,7 @@ async def _compute_match_async(job_id: str):
 
 def _create_high_match_notification(job_id: str, title: str, company: str, score: float):
     """Create notification for high-match jobs."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     import uuid
 
@@ -243,7 +243,7 @@ def _trigger_auto_apply(job_id: str, match_score: float):
 
 def _create_limit_reached_notification(job_id: str, used: int, limit: int):
     """Notify the user that a high-match job was found but daily limit is reached."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     import uuid
 

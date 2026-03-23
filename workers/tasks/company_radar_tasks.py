@@ -20,7 +20,7 @@ async def _scan_async():
     import yaml
     from pathlib import Path
     from engines.company_radar.signal_collector import SignalCollector
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
 
     collector = SignalCollector()

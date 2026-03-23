@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 @celery_app.task(name="workers.tasks.cleanup_tasks.remove_stale_jobs")
 def remove_stale_jobs():
     """Remove expired jobs and old notifications."""
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
 
     logger.info("Running cleanup...")

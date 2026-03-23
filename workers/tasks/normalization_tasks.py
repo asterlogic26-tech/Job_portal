@@ -35,7 +35,7 @@ async def _normalize_async(raw: dict) -> Optional[dict]:
     from engines.normalization.deduplicator import compute_content_hash
     from engines.normalization.title_normalizer import normalize_title
     from engines.embedding.embedder import embed_text
-    from db_utils import get_sync_session
+    from workers.db_utils import get_sync_session
     from sqlalchemy import text
     import uuid
 
