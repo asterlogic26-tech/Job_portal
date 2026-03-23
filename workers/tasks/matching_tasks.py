@@ -53,9 +53,11 @@ async def _compute_match_async(job_id: str):
 
     with get_sync_session() as session:
         # Load job
+        # Column order: 0=id, 1=title, 2=seniority_level, 3=required_skills, 4=preferred_skills,
+        #               5=salary_min, 6=salary_max, 7=remote_policy, 8=posted_at, 9=company_id, 10=company_name
         job_row = session.execute(
             text("""
-            SELECT id, title, seniority_level, skills_required, skills_preferred,
+            SELECT id, title, seniority_level, required_skills, preferred_skills,
                    salary_min, salary_max, remote_policy, posted_at, company_id,
                    company_name
             FROM jobs WHERE id = :job_id
@@ -83,9 +85,9 @@ async def _compute_match_async(job_id: str):
         job = {
             "seniority_level": job_row[2],
             "skills_required": job_row[3] or [],
-            "salary_min": job_row[6],
-            "salary_max": job_row[7],
-            "posted_at": job_row[9],
+            "salary_min": job_row[5],
+            "salary_max": job_row[6],
+            "posted_at": job_row[8],
         }
         profile = {
             "skills": profile_row[0] or [],
@@ -126,51 +128,53 @@ async def _compute_match_async(job_id: str):
             company_hiring_score=company_hiring_score,
         )
 
-        # Upsert match record
+        # Extract matched/missing skills from breakdown
+        skill_breakdown = match_result["scoring_breakdown"].get("skill_overlap", {})
+        matching_skills = skill_breakdown.get("matched_skills", [])
+        missing_skills = skill_breakdown.get("missing_skills", [])
+
+        # Upsert match record (scores stored as 0.0–1.0 to match frontend expectations)
         session.execute(
             text("""
             INSERT INTO job_matches (
-                id, job_id, match_score, interview_probability, confidence_score,
-                skill_coverage_pct, skill_overlap_score, seniority_fit_score,
-                salary_alignment_score, recency_score, company_growth_score,
-                risk_factors, strength_factors, scoring_breakdown, computed_at,
+                id, job_id, user_id,
+                total_score, skill_score, seniority_score, salary_score,
+                recency_score, culture_score, company_growth_score,
+                interview_probability,
+                matching_skills, missing_skills, score_breakdown,
                 created_at, updated_at
             ) VALUES (
-                :id, :job_id, :match_score, :interview_prob, :confidence,
-                :skill_cov, :skill_ovlp, :seniority, :salary, :recency, :company,
-                :risks::jsonb, :strengths::jsonb, :breakdown::jsonb, NOW(), NOW(), NOW()
+                :id, :job_id, :user_id,
+                :total_score, :skill_score, :seniority_score, :salary_score,
+                :recency_score, :culture_score, :company_growth_score,
+                :interview_prob,
+                :matching_skills::jsonb, :missing_skills::jsonb, :score_breakdown::jsonb,
+                NOW(), NOW()
             )
             ON CONFLICT (job_id) DO UPDATE SET
-                match_score = EXCLUDED.match_score,
+                total_score = EXCLUDED.total_score,
                 interview_probability = EXCLUDED.interview_probability,
-                skill_coverage_pct = EXCLUDED.skill_coverage_pct,
-                risk_factors = EXCLUDED.risk_factors,
-                strength_factors = EXCLUDED.strength_factors,
-                computed_at = NOW(),
+                skill_score = EXCLUDED.skill_score,
+                matching_skills = EXCLUDED.matching_skills,
+                missing_skills = EXCLUDED.missing_skills,
                 updated_at = NOW()
             """),
             {
                 "id": str(uuid.uuid4()),
                 "job_id": job_id,
-                "match_score": match_result["match_score"],
-                "interview_prob": predictor_result["interview_probability"],
-                "confidence": predictor_result["confidence_score"],
-                "skill_cov": match_result["skill_coverage_pct"],
-                "skill_ovlp": match_result["skill_overlap_score"],
-                "seniority": match_result["seniority_fit_score"],
-                "salary": match_result["salary_alignment_score"],
-                "recency": match_result["recency_score"],
-                "company": match_result["company_growth_score"],
-                "risks": json.dumps(match_result["risk_factors"]),
-                "strengths": json.dumps(match_result["strength_factors"]),
-                "breakdown": json.dumps(match_result["scoring_breakdown"]),
+                "user_id": SINGLE_USER_ID,
+                "total_score": round(match_result["match_score"] / 100.0, 4),
+                "skill_score": match_result["skill_overlap_score"],
+                "seniority_score": match_result["seniority_fit_score"],
+                "salary_score": match_result["salary_alignment_score"],
+                "recency_score": match_result["recency_score"],
+                "culture_score": 0.5,
+                "company_growth_score": match_result["company_growth_score"],
+                "interview_prob": round(predictor_result["interview_probability"] / 100.0, 4),
+                "matching_skills": json.dumps(matching_skills),
+                "missing_skills": json.dumps(missing_skills),
+                "score_breakdown": json.dumps(match_result["scoring_breakdown"]),
             },
-        )
-
-        # Update job status
-        session.execute(
-            text("UPDATE jobs SET status = 'matched', updated_at = NOW() WHERE id = :id"),
-            {"id": job_id},
         )
         session.commit()
 

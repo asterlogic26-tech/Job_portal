@@ -73,45 +73,45 @@ async def _normalize_async(raw: dict) -> Optional[dict]:
 
     # Store job in DB
     job_id = str(uuid.uuid4())
+    # Generate a unique external_id for sources that don't provide one (e.g. RSS)
+    external_id = raw.get("external_id") or f"hash_{content_hash[:24]}"
     with get_sync_session() as session:
         session.execute(
             text("""
             INSERT INTO jobs (
-                id, external_id, source, source_url, company_name,
-                title, title_normalized, description_raw, description_markdown,
-                skills_required, skills_preferred, seniority_level, employment_type,
+                id, external_id, source, url, company_name,
+                title, normalized_title, description, description_html,
+                required_skills, preferred_skills, seniority_level,
                 remote_policy, location, salary_min, salary_max, salary_currency,
-                salary_raw, apply_url, content_hash, status, discovered_at, posted_at,
+                apply_url, content_hash, posted_at,
                 created_at, updated_at
             ) VALUES (
-                :id, :external_id, :source, :source_url, :company_name,
-                :title, :title_normalized, :description_raw, :description_markdown,
-                :skills_required::jsonb, :skills_preferred::jsonb, :seniority_level, :employment_type,
+                :id, :external_id, :source, :url, :company_name,
+                :title, :normalized_title, :description, :description_html,
+                :required_skills::jsonb, :preferred_skills::jsonb, :seniority_level,
                 :remote_policy, :location, :salary_min, :salary_max, 'USD',
-                :salary_raw, :apply_url, :content_hash, 'new', NOW(), :posted_at,
+                :apply_url, :content_hash, :posted_at,
                 NOW(), NOW()
             )
             ON CONFLICT DO NOTHING
             """),
             {
                 "id": job_id,
-                "external_id": raw.get("external_id", ""),
+                "external_id": external_id,
                 "source": raw.get("source", "unknown"),
-                "source_url": raw.get("source_url", ""),
+                "url": raw.get("source_url", ""),
                 "company_name": extracted.get("company_name") or company,
                 "title": title,
-                "title_normalized": normalized_title,
-                "description_raw": description[:10000],
-                "description_markdown": extracted.get("description_markdown", "")[:5000],
-                "skills_required": str(extracted.get("skills_required", [])).replace("'", '"'),
-                "skills_preferred": str(extracted.get("skills_preferred", [])).replace("'", '"'),
-                "seniority_level": extracted.get("seniority_level"),
-                "employment_type": extracted.get("employment_type"),
-                "remote_policy": extracted.get("remote_policy") or raw.get("remote_policy"),
+                "normalized_title": normalized_title,
+                "description": description[:10000],
+                "description_html": extracted.get("description_markdown", "")[:5000],
+                "required_skills": str(extracted.get("skills_required", [])).replace("'", '"'),
+                "preferred_skills": str(extracted.get("skills_preferred", [])).replace("'", '"'),
+                "seniority_level": extracted.get("seniority_level") or "unknown",
+                "remote_policy": extracted.get("remote_policy") or raw.get("remote_policy") or "unknown",
                 "location": extracted.get("location") or raw.get("location", ""),
                 "salary_min": extracted.get("salary_min"),
                 "salary_max": extracted.get("salary_max"),
-                "salary_raw": extracted.get("salary_raw"),
                 "apply_url": raw.get("apply_url") or raw.get("source_url", ""),
                 "content_hash": content_hash,
                 "posted_at": raw.get("posted_at"),
